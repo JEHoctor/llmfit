@@ -179,14 +179,12 @@ impl SystemSpecs {
         // These share the full system RAM between CPU and GPU, like Apple Silicon.
         // nvidia-smi may report 0 VRAM or a small dedicated portion, so we
         // override with total system RAM and flag as unified memory.
-        let is_nvidia_unified = gpus.iter().any(|g| {
-            let lower = g.name.to_lowercase();
-            lower.contains("gb10") || lower.contains("gb20")
-        });
+        // Inside Docker the friendly name may be missing; we also match by PCI
+        // device ID (e.g. "Device [10de:2e12]").
+        let is_nvidia_unified = gpus.iter().any(|g| is_nvidia_unified_memory_gpu(&g.name));
         if is_nvidia_unified {
             for gpu in &mut gpus {
-                let lower = gpu.name.to_lowercase();
-                if lower.contains("gb10") || lower.contains("gb20") {
+                if is_nvidia_unified_memory_gpu(&gpu.name) {
                     gpu.unified_memory = true;
                     gpu.vram_gb = Some(total_ram_gb);
                 }
@@ -499,12 +497,14 @@ impl SystemSpecs {
             }
         }
 
+        let unified_memory = is_nvidia_unified_memory_gpu(&name);
+
         Some(GpuInfo {
             name,
             vram_gb,
             backend,
             count: gpu_count,
-            unified_memory: false,
+            unified_memory,
         })
     }
 
@@ -1983,6 +1983,25 @@ pub fn quant_min_compute_capability(quantization: &str) -> Option<(u8, u8)> {
     }
 }
 
+/// Check if a GPU name (including PCI device IDs from lspci) indicates an
+/// NVIDIA unified memory SoC (Grace Blackwell / DGX Spark / GB-series).
+/// Inside Docker, nvidia-smi may report the raw PCI device ID instead of the
+/// friendly model name, e.g. "NVIDIA Corporation Device [10de:2e12] (rev a1)"
+/// instead of "NVIDIA GB10".
+fn is_nvidia_unified_memory_gpu(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    // Friendly model names
+    if lower.contains("gb10") || lower.contains("gb20") {
+        return true;
+    }
+    // PCI device IDs (hex) — these are the known GB-series SoCs.
+    // 10de:2e12 = GB10 (DGX Spark / Project DIGITS)
+    if lower.contains("2e12") {
+        return true;
+    }
+    false
+}
+
 /// Fallback VRAM estimation from GPU model name.
 /// Used when nvidia-smi or other tools report 0 VRAM.
 fn estimate_vram_from_name(name: &str) -> f64 {
@@ -2079,8 +2098,10 @@ fn estimate_vram_from_name(name: &str) -> f64 {
     if lower.contains("t4") {
         return 16.0;
     }
-    // NVIDIA Grace / DGX Spark unified memory SoCs
-    if lower.contains("gb10") {
+    // NVIDIA Grace / DGX Spark unified memory SoCs.
+    // Also match PCI device ID 2e12 (GB10) for Docker/container environments
+    // where lspci shows "Device [10de:2e12]" instead of the friendly name.
+    if lower.contains("gb10") || lower.contains("2e12") {
         return 128.0;
     }
     if lower.contains("gb20") {
