@@ -917,7 +917,9 @@ fn llamacpp_models_dir() -> PathBuf {
 
 /// Find a binary in PATH using `which`.
 fn find_binary(name: &str) -> Option<String> {
-    which::which(name).ok().map(|p| p.to_string_lossy().to_string())
+    which::which(name)
+        .ok()
+        .map(|p| p.to_string_lossy().to_string())
 }
 
 /// Simple percent-encoding for URL query parameters.
