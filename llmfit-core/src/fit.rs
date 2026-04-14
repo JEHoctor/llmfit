@@ -1,5 +1,5 @@
 use crate::hardware::{GpuBackend, SystemSpecs};
-use crate::models::{self, LlmModel, UseCase};
+use crate::models::{self, KvQuant, LlmModel, UseCase};
 
 /// Default context window cap used for memory estimation when no explicit
 /// `--max-context` is provided. Most runtimes (llama.cpp, Ollama) default to
@@ -113,11 +113,12 @@ pub struct ModelFit {
     pub moe_offloaded_gb: Option<f64>, // GB of inactive experts offloaded to RAM
     pub score: f64,                    // weighted composite score 0-100
     pub score_components: ScoreComponents,
-    pub estimated_tps: f64,        // baseline estimated tokens per second
-    pub best_quant: String,        // best quantization for this hardware
-    pub use_case: UseCase,         // inferred use case category
-    pub runtime: InferenceRuntime, // inference runtime (MLX or llama.cpp)
-    pub installed: bool,           // model found in a local runtime provider
+    pub estimated_tps: f64,         // baseline estimated tokens per second
+    pub best_quant: String,         // best quantization for this hardware
+    pub use_case: UseCase,          // inferred use case category
+    pub runtime: InferenceRuntime,  // inference runtime (MLX or llama.cpp)
+    pub installed: bool,            // model found in a local runtime provider
+    pub fits_with_turboquant: bool, // TooTight at fp16 KV but fits with TurboQuant KV
 }
 
 impl ModelFit {
@@ -383,6 +384,18 @@ impl ModelFit {
             ));
         }
 
+        // Check if a TooTight model would fit with TurboQuant KV compression.
+        // Only compute on CUDA systems — TurboQuant requires vLLM + CUDA.
+        let fits_with_turboquant =
+            fit_level == FitLevel::TooTight && system.backend == GpuBackend::Cuda && {
+                let tq_mem = model.estimate_memory_gb_with_kv(
+                    best_quant,
+                    estimation_ctx,
+                    KvQuant::TurboQuant,
+                );
+                tq_mem <= mem_available
+            };
+
         ModelFit {
             model: model.clone(),
             fit_level,
@@ -399,6 +412,7 @@ impl ModelFit {
             use_case,
             runtime,
             installed: false, // set later by App after provider detection
+            fits_with_turboquant,
         }
     }
 
