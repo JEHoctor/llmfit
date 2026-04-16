@@ -6,7 +6,7 @@ description = "Hundreds of models & providers. One command to find what runs on 
 authors = [
     { name = "Alex Jones", email = "alexsimonjones@gmail.com" }
 ]
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.8"
 keywords = ["llm", "cli", "machine-learning", "model-management"]
 classifiers = [
@@ -23,16 +23,10 @@ requires = ["hatchling", "packaging", "tomli"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata.hooks.custom]
-path = "llmfit-python/hatch_build.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["llmfit-python/src/llmfit"]
-
-[tool.hatch.build.targets.wheel.sources]
-"llmfit-python/src" = ""
+path = "hatch_build.py"
 
 [tool.hatch.build.hooks.custom]
-path = "llmfit-python/hatch_build.py"
+path = "hatch_build.py"
 
 [dependency-groups]
 dev = [
@@ -45,11 +39,10 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["llmfit-python/tests"]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 120
-exclude = ["scripts/"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -66,13 +59,13 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"llmfit-python/hatch_build.py" = [
+"hatch_build.py" = [
     "INP001", # Standalone build script, not a package module
     "T201",   # Calls to print() are intentional in our build hooks
     "TRY003", # Inline exception messages are fine in a build utility
     "EM102",  # Exception messages using f-strings are fine in a build utility
 ]
-"llmfit-python/tests/*" = [
+"tests/*" = [
     "S101",    # Assert statements are allowed in tests
     "INP001",  # No __init__.py needed in tests/
     "PLR2004", # Magic values are fine in tests

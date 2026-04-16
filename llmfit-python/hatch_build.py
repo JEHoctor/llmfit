@@ -60,7 +60,7 @@ class LlmfitMetadataHook(MetadataHookInterface):
         1. ``LLMFIT_VERSION`` environment variable (e.g. ``0.9.8``).
         2. The ``version`` field in ``[workspace.package]`` from ``Cargo.toml``.
         """
-        with (Path(self.root) / "Cargo.toml").open("rb") as f:
+        with (Path(self.root).parent / "Cargo.toml").open("rb") as f:
             workspace_package: dict[str, str] = tomli.load(f)["workspace"]["package"]
         version: str = os.environ.get("LLMFIT_VERSION") or workspace_package["version"]
         if not re.match(r"^\d+\.\d+\.\d+$", version):
@@ -84,14 +84,14 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
         raise RuntimeError(f"No suitable wheel platform found for runtime platform {first!r}.")
 
     @staticmethod
-    def _find_binary_for_target(root: Path, py_target: str) -> Path:
+    def _find_binary_for_target(llmfit_root: Path, py_target: str) -> Path:
         """Find the binary compiled for a specific Rust target.
 
         Looks in ``target/{upstream_target}/release/``, which is where Cargo
         places the binary when built with ``--target``.
         """
         upstream_target, binary_name = TARGET_CONFIGS[py_target]
-        bin_path = root / "target" / upstream_target / "release" / binary_name
+        bin_path = llmfit_root / "target" / upstream_target / "release" / binary_name
         if not bin_path.is_file():
             raise FileNotFoundError(
                 f"Binary not found at {bin_path}. Expected it to be built for target {upstream_target!r}.",
@@ -99,7 +99,7 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
         return bin_path
 
     @staticmethod
-    def _find_local_binary(root: Path) -> Path:
+    def _find_local_binary(llmfit_root: Path) -> Path:
         """Find the locally compiled binary in default Cargo output locations.
 
         Checks ``target/debug/`` first (from ``make build``), then
@@ -107,8 +107,8 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
         """
         binary_name = "llmfit.exe" if sys.platform == "win32" else "llmfit"
         candidates = [
-            root / "target" / "debug" / binary_name,
-            root / "target" / "release" / binary_name,
+            llmfit_root / "target" / "debug" / binary_name,
+            llmfit_root / "target" / "release" / binary_name,
         ]
         for candidate in candidates:
             if candidate.is_file():
@@ -147,7 +147,6 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
 
     def initialize(self, version: str, build_data: dict) -> None:
         """Locate the platform binary and configure the wheel before it is built."""
-        root = Path(self.root)
         py_target_from_env = os.environ.get("LLMFIT_PYTHON_PLATFORM_TAG")
         py_target = py_target_from_env or self._detect_platform()
         if py_target not in TARGET_CONFIGS:
@@ -160,22 +159,23 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
 
         print(f"  target={upstream_target}  version={pypi_version}  wheel tag=py3-none-{py_target}")
 
+        llmfit_root = Path(self.root).parent
         if version == "editable":
             if py_target_from_env:
                 # Explicit platform tag means the user built for a specific target
                 # (e.g. `cargo build --release --target aarch64-unknown-linux-gnu`).
                 # Look in `target/{upstream_target}/release/` rather than the
                 # default host-native locations.
-                bin_path = self._find_binary_for_target(root, py_target)
+                bin_path = self._find_binary_for_target(llmfit_root, py_target)
             else:
-                bin_path = self._find_local_binary(root)
+                bin_path = self._find_local_binary(llmfit_root)
             self._check_binary_version(bin_path, pypi_version)
         else:
-            bin_path = self._find_binary_for_target(root, py_target)
+            bin_path = self._find_binary_for_target(llmfit_root, py_target)
 
         # Place the binary in the wheel's scripts directory so that the
         # installer puts it in .venv/bin/ (or Scripts/ on Windows).
-        build_data["shared_scripts"][str(bin_path)] = binary_name
+        build_data["shared_scripts"][str(bin_path.absolute())] = binary_name
 
         # Override the platform tag so the wheel gets the correct platform-specific name.
         build_data["tag"] = f"py3-none-{py_target}"

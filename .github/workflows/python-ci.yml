@@ -6,42 +6,19 @@ on:
       - main
     paths:
       - 'llmfit-python/**'
-      - 'pyproject.toml'
-      - 'scripts/**/*.py'
   pull_request:
     branches:
       - main
     paths:
       - 'llmfit-python/**'
-      - 'pyproject.toml'
-      - 'scripts/**/*.py'
     types:
       - opened
       - synchronize
       - reopened
 
 jobs:
-  changes:
-    name: Detect changed paths
-    runs-on: ubuntu-latest
-    outputs:
-      tests: ${{ steps.filter.outputs.tests }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Filter paths
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            tests:
-              - 'llmfit-python/**'
-              - 'pyproject.toml'
-
   test:
     name: Python Tests
-    needs: changes
-    if: needs.changes.outputs.tests == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -104,6 +81,7 @@ jobs:
 
       - name: Run Python tests
         run: uv run pytest -vv
+        working-directory: llmfit-python
 
   lint:
     name: Python Lint & Typecheck
@@ -123,9 +101,12 @@ jobs:
 
       - name: Ruff lint
         run: uv run ruff check .
+        working-directory: llmfit-python
 
       - name: Ruff format check
         run: uv run ruff format --check .
+        working-directory: llmfit-python
 
       - name: Type check
-        run: uv run ty check llmfit-python/
+        run: uv run ty check .
+        working-directory: llmfit-python

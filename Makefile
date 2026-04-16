@@ -1,8 +1,7 @@
 # Makefile for llmfit
 # Convenience commands for building, testing, and updating the model database
 
-.PHONY: help build release clean run test update-models update-docker-models update-catalogs check fmt clippy install \
-        py-fmt py-lint py-test py-typecheck py-check
+.PHONY: help build release clean run test update-models update-docker-models update-catalogs check fmt clippy install
 
 # Default target
 help:
@@ -21,13 +20,6 @@ help:
 	@echo "  make clippy         - Run clippy linter"
 	@echo "  make clean          - Remove build artifacts"
 	@echo "  make install        - Install release binary to ~/.cargo/bin"
-	@echo ""
-	@echo "Python targets:"
-	@echo "  make py-fmt         - Format Python code with ruff"
-	@echo "  make py-lint        - Lint Python code with ruff"
-	@echo "  make py-test        - Run Python tests with pytest"
-	@echo "  make py-typecheck   - Type-check Python code with ty"
-	@echo "  make py-check       - Run all Python quality checks"
 	@echo ""
 
 # Build debug version
@@ -82,22 +74,3 @@ clippy:
 # Install to ~/.cargo/bin
 install:
 	cargo install --path .
-
-# Format Python code
-py-fmt:
-	uv run ruff format .
-
-# Lint Python code
-py-lint:
-	uv run ruff check .
-
-# Run Python tests
-py-test:
-	uv run pytest -vv
-
-# Type-check Python code
-py-typecheck:
-	uv run ty check llmfit-python/
-
-# Run all Python quality checks
-py-check: py-fmt py-lint py-typecheck py-test
