@@ -100,13 +100,13 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Ruff lint
-        run: uv run ruff check .
+        run: uv run --only-group=dev ruff check .
         working-directory: llmfit-python
 
       - name: Ruff format check
-        run: uv run ruff format --check .
+        run: uv run --only-group=dev ruff format --check .
         working-directory: llmfit-python
 
       - name: Type check
-        run: uv run ty check .
+        run: uv run --only-group=dev ty check .
         working-directory: llmfit-python
