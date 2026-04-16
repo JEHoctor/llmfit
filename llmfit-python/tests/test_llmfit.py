@@ -6,8 +6,9 @@ import re
 import subprocess
 from pathlib import Path
 
-import llmfit
 import pytest
+
+import llmfit
 from llmfit import find_llmfit_bin
 
 
