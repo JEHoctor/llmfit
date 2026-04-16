@@ -1,4 +1,4 @@
-"""Tests for the llmfit Python module (llmfit-python/src/)."""
+"""Tests for the llmfit Python module (llmfit-python/src/llmfit/)."""
 
 from __future__ import annotations
 
