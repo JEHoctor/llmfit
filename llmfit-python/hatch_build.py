@@ -173,12 +173,16 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
         if version == "editable":
             # For editable installs, look for target/debug/llmfit or target/release/llmfit (or llmfit.exe on Windows).
             bin_path = self._find_local_binary(llmfit_root)
-            self._check_binary_version(bin_path, pypi_version)
         elif version == "standard":
             # For release installs, look for e.g. target/x86_64-unknown-linux-gnu/release/llmfit on Linux.
             bin_path = self._find_binary_for_target(llmfit_root, py_target)
         else:
             raise ValueError(f"Unknown version: {version!r}")
+
+        # If possible, check the self-reported version of the binary.
+        # If the binary was built for a different platform then it's not possible.
+        if py_target == running_platform:
+            self._check_binary_version(bin_path, pypi_version)
 
         # Place the binary in the wheel's scripts directory so that the
         # installer puts it in .venv/bin/ (or Scripts/ on Windows).
