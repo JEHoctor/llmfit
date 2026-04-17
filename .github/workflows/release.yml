@@ -225,6 +225,7 @@ jobs:
             dest="target/${rust_target}/release"
             mkdir -p "$dest"
             cp "binaries/binary-${rust_target}/${binary_name}" "${dest}/${binary_name}"
+            chmod +x "${dest}/${binary_name}"
             LLMFIT_PYTHON_PLATFORM_TAG="${py_tag}" uv build --wheel --out-dir=dist/ llmfit-python/
           done
 
