@@ -212,6 +212,13 @@ jobs:
             "win_amd64:x86_64-pc-windows-msvc:llmfit.exe"
             "win_arm64:aarch64-pc-windows-msvc:llmfit.exe"
           )
+          for entry in "${TARGETS[@]}"; do
+            IFS=: read -r py_tag rust_target binary_name <<< "$entry"
+            if [ ! -f "binaries/binary-${rust_target}/${binary_name}" ]; then
+              echo "Missing binary for ${py_tag}: binaries/binary-${rust_target}/${binary_name}"
+              exit 1
+            fi
+          done
           mkdir -p dist/
           for entry in "${TARGETS[@]}"; do
             IFS=: read -r py_tag rust_target binary_name <<< "$entry"
