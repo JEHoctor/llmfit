@@ -171,11 +171,11 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
 
         llmfit_root = Path(self.root).parent
         if version == "editable":
-            # For editable installs, look for target/debug/llmfit or target/release/llmfit.
+            # For editable installs, look for target/debug/llmfit or target/release/llmfit (or llmfit.exe on Windows).
             bin_path = self._find_local_binary(llmfit_root)
             self._check_binary_version(bin_path, pypi_version)
         elif version == "standard":
-            # For release installs, look for target/x86_64-unknown-linux-gnu/release/llmfit.
+            # For release installs, look for e.g. target/x86_64-unknown-linux-gnu/release/llmfit on Linux.
             bin_path = self._find_binary_for_target(llmfit_root, py_target)
         else:
             raise ValueError(f"Unknown version: {version!r}")
