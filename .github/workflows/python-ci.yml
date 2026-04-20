@@ -62,14 +62,18 @@ jobs:
           ARCHIVE="${ASSET}.${{ matrix.archive_ext }}"
           BASE_URL="https://github.com/AlexsJones/llmfit/releases/download/${TAG}"
 
-          curl -fsSL "${BASE_URL}/${ARCHIVE}" -o "${ARCHIVE}"
-          curl -fsSL "${BASE_URL}/${ARCHIVE}.sha256" -o "${ARCHIVE}.sha256"
-
+          EXPECTED=$(curl -fsSL "${BASE_URL}/${ARCHIVE}.sha256" | awk '{print $1}')
           if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum --check "${ARCHIVE}.sha256"
+            ACTUAL=$(curl -fsSL "${BASE_URL}/${ARCHIVE}" | tee "${ARCHIVE}" | sha256sum | awk '{print $1}')
           else
-            shasum -a 256 --check "${ARCHIVE}.sha256"
+            ACTUAL=$(curl -fsSL "${BASE_URL}/${ARCHIVE}" | tee "${ARCHIVE}" | shasum -a 256 | awk '{print $1}')
           fi
+
+          if [ "${ACTUAL}" != "${EXPECTED}" ]; then
+            echo "Checksum mismatch for ${ARCHIVE}: expected ${EXPECTED}, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "Checksum OK for ${ARCHIVE}"
 
           if [ "${{ matrix.archive_ext }}" = "tar.gz" ]; then
             tar -xzf "${ARCHIVE}"
