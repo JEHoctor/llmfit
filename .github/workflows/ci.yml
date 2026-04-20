@@ -109,10 +109,7 @@ jobs:
 
       - name: Run tests
         if: needs.changes.outputs.rust-changed == 'true'
-        run: |
-          ls -la target/
-          cargo test --verbose
-          ls -la target/
+        run: cargo test --verbose
 
       - name: Set up Python
         uses: actions/setup-python@v6
