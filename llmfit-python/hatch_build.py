@@ -21,8 +21,9 @@ LLMFIT_PYTHON_PLATFORM_TAG
     Not supported for editable installs.
 LLMFIT_VERSION
     Override the version read from ``Cargo.toml`` (e.g. ``0.9.8``).
-    Supported for both release and editable installs, but useful
-    mainly for local debugging with an editable install.
+    Supported for both release and editable installs.  Also used as
+    part of ``python-ci.yml``'s strategy for avoiding a Rust rebuild
+    when running Python tests.
 """
 
 from __future__ import annotations
