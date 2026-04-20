@@ -131,6 +131,9 @@ jobs:
         if: needs.changes.outputs.rust-changed == 'false' || matrix.os == 'macos-latest'
         run: cargo build
 
+      - name: Debug target/ contents
+        run: ls -la target/
+
       - name: Run Python tests
         if: needs.changes.outputs.python-changed == 'true'
         run: uv run pytest -vv
