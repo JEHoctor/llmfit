@@ -138,7 +138,7 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
             timeout=5,
         )
         output = result.stdout.strip()  # e.g. "llmfit 0.9.8"
-        match = re.match(r"^llmfit (\d+\.\d+\.\d+)$", output)
+        match = re.match(r"^llmfit v?(\d+\.\d+\.\d+)$", output)
         if not match:
             raise RuntimeError(f"Unexpected output from '{bin_path} --version': {output!r}")
         binary_version = match.group(1)
