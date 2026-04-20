@@ -128,7 +128,7 @@ jobs:
 
       # This is a no-op if cargo test already ran and produced a debug build.
       - name: Build
-        if: needs.changes.outputs.rust-changed == 'false'
+        if: needs.changes.outputs.rust-changed == 'false' || matrix.os == 'macos-latest'
         run: cargo build
 
       - name: Run Python tests
