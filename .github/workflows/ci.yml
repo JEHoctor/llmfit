@@ -126,7 +126,7 @@ jobs:
         run: uv sync --no-dev
         working-directory: llmfit-python
 
-      # This is a no-op if cargo test already ran above.
+      # This is a no-op if cargo test already ran and produced a debug build.
       - name: Build
         if: needs.changes.outputs.rust-changed == 'false'
         run: cargo build
