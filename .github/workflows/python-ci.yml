@@ -90,7 +90,7 @@ jobs:
         env:
           LLMFIT_VERSION: ${{ steps.fetch-binary.outputs.version }}
         run: |
-          echo Running tests with llmfit version: "$(uv run --no-editable llmfit --version | tr -d '\n')"
+          echo "Running tests with llmfit version: $(uv run --no-editable llmfit --version | tr -d '\n')"
           uv run --no-editable pytest -vv
         working-directory: llmfit-python
 
