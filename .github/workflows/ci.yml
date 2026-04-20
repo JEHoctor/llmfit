@@ -112,18 +112,23 @@ jobs:
         run: cargo test --verbose
 
       - name: Set up Python
-        if: needs.changes.outputs.python-changed == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: Install uv
-        if: needs.changes.outputs.python-changed == 'true'
         uses: astral-sh/setup-uv@v8.1.0
 
-      # This is a no-op if cargo test already ran.
+      # This is an integration test between the Rust code and the Python build hooks
+      # (hatch_build.py). It is redundant if the full Python tests below are run.
+      - name: Run Rust/hatch_build.py integration test
+        if: needs.changes.outputs.python-changed == 'false'
+        run: uv sync --no-dev
+        working-directory: llmfit-python
+
+      # This is a no-op if cargo test already ran above.
       - name: Build
-        if: needs.changes.outputs.python-changed == 'true'
+        if: needs.changes.outputs.rust-changed == 'false'
         run: cargo build
 
       - name: Run Python tests
