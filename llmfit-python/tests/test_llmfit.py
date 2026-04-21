@@ -34,3 +34,10 @@ def test_binary_runs() -> None:
 def test_version() -> None:
     """Tests that llmfit.__version__ is a valid semantic version."""
     assert re.match(r"^\d+\.\d+\.\d+$", llmfit.__version__) is not None
+
+
+@pytest.mark.rust_integration
+def test_get_system_info() -> None:
+    """Tests that get_system_info returns hardware fields directly."""
+    info = llmfit.get_system_info()
+    assert isinstance(info["cpu_cores"], int)
