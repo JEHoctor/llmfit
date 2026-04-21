@@ -34,7 +34,7 @@ def get_system_info() -> dict:
         text=True,
         check=True,
     )
-    return json.loads(result.stdout)
+    return json.loads(result.stdout)["system"]
 
 
 def find_llmfit_bin() -> Path:
