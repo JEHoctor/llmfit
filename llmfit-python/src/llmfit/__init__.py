@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
 import sysconfig
 from importlib.metadata import PackageNotFoundError, version
@@ -22,6 +24,17 @@ class BinaryNotFoundError(LlmfitError):
         super().__init__(
             f"llmfit binary not found at {candidate}. This may indicate a corrupt or incomplete installation."
         )
+
+
+def get_system_info() -> dict:
+    """Run ``llmfit system --json`` and return the hardware info dict."""
+    result = subprocess.run(
+        [find_llmfit_bin(), "system", "--json"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return json.loads(result.stdout)["system"]
 
 
 def find_llmfit_bin() -> Path:
