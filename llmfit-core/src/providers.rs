@@ -930,8 +930,16 @@ impl LlamaCppProvider {
                 });
 
                 // Write to a temp file, then rename to avoid partial files.
+                // Remove any pre-existing entry and open with create_new
+                // (O_EXCL) so a planted symlink at tmp_path cannot redirect
+                // the write outside models_dir.
                 let tmp_path = dest_path.with_extension("gguf.part");
-                let file = match std::fs::File::create(&tmp_path) {
+                let _ = std::fs::remove_file(&tmp_path);
+                let file = match std::fs::OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&tmp_path)
+                {
                     Ok(f) => f,
                     Err(e) => {
                         let _ = tx.send(PullEvent::Error(format!("Failed to create file: {}", e)));
@@ -1227,13 +1235,13 @@ fn parse_repo_gguf_entries(entries: Vec<serde_json::Value>) -> Vec<(String, u64)
 pub fn llamacpp_models_dir() -> PathBuf {
     if let Ok(dir) = std::env::var("LLMFIT_MODELS_DIR") {
         PathBuf::from(dir)
-    } else if let Ok(home) = std::env::var("HOME") {
+    } else if let Ok(home) = std::env::var("HOME").or_else(|_| std::env::var("USERPROFILE")) {
         PathBuf::from(home)
             .join(".cache")
             .join("llmfit")
             .join("models")
     } else {
-        PathBuf::from("/tmp/.cache/llmfit/models")
+        PathBuf::from(".llmfit").join("models")
     }
 }
 
