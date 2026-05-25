@@ -1,0 +1,29 @@
+[project]
+name = "llmfit-bin"
+dynamic = ["version", "license-expression"]
+license-files = ["LICENSE"]
+description = "Pre-built llmfit binary distribution package."
+authors = [
+    { name = "Alex Jones", email = "alexsimonjones@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["llm", "cli", "machine-learning", "model-management"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/AlexsJones/llmfit"
+"Bug Tracker" = "https://github.com/AlexsJones/llmfit/issues"
+
+[build-system]
+requires = ["hatchling", "packaging", "tomli"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata.hooks.custom]
+path = "hatch_build.py"
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"

@@ -1,0 +1,28 @@
+[project]
+name = "llmfit-pyo3"
+version = "0.9.15"
+description = "PyO3 bindings for llmfit — native Python access to llmfit-core."
+authors = [
+    { name = "Alex Jones", email = "alexsimonjones@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["llm", "machine-learning", "model-management"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/AlexsJones/llmfit"
+"Bug Tracker" = "https://github.com/AlexsJones/llmfit/issues"
+
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+python-packages = ["src/llmfit_pyo3"]
+features = ["pyo3/extension-module"]
+manifest-path = "Cargo.toml"

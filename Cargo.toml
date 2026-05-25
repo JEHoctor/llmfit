@@ -1,5 +1,5 @@
 [workspace]
-members = ["llmfit-core", "llmfit-tui", "llmfit-desktop"]
+members = ["llmfit-core", "llmfit-tui", "llmfit-desktop", "llmfit-python/packages/llmfit-pyo3"]
 default-members = ["llmfit-core", "llmfit-tui"]
 resolver = "3"
 

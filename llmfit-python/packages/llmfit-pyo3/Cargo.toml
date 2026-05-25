@@ -1,0 +1,14 @@
+[package]
+name = "llmfit-pyo3"
+version.workspace = true
+edition = "2024"
+description = "PyO3 bindings for llmfit-core"
+license = "MIT"
+
+[lib]
+name = "llmfit_pyo3"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.28", features = ["extension-module"] }
+llmfit-core = { path = "../../../llmfit-core" }

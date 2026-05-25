@@ -63,7 +63,7 @@ class LlmfitMetadataHook(MetadataHookInterface):
         1. ``LLMFIT_VERSION`` environment variable (e.g. ``0.9.8``).
         2. The ``version`` field in ``[workspace.package]`` from ``Cargo.toml``.
         """
-        with (Path(self.root).parent / "Cargo.toml").open("rb") as f:
+        with (Path(self.root).parents[2] / "Cargo.toml").open("rb") as f:
             workspace_package: dict[str, str] = tomli.load(f)["workspace"]["package"]
         version: str = os.environ.get("LLMFIT_VERSION") or workspace_package["version"]
         if not re.match(r"^\d+\.\d+\.\d+$", version):
@@ -168,7 +168,7 @@ class LlmfitBinaryBuildHook(BuildHookInterface):
 
         print(f"  target={upstream_target}  version={pypi_version}  wheel tag=py3-none-{py_target}")
 
-        llmfit_root = Path(self.root).parent
+        llmfit_root = Path(self.root).parents[2]
         if version == "editable":
             # For editable installs, look for target/debug/llmfit or target/release/llmfit (or llmfit.exe on Windows).
             bin_path = self._find_local_binary(llmfit_root)
